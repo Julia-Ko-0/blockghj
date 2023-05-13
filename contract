@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0;
+contract sale{
+    struct House{
+        address owner;
+        uint square;
+        uint year;
+        bool sell;
+        uint price;
+    }
+    House[] public  appHouse;
+    address admin ;
+    function addHouse(uint _square,uint _year) public {
+        appHouse.push(House(msg.sender,_square,_year,false,0));
+    }
+    // выставляем на продажу задаем индекс дома и цену
+    function canselSele(uint _house,uint _price) public {
+        require(msg.sender == appHouse[_house].owner,"not owner");
+        appHouse[_house].price = _price;
+        appHouse[_house].sell = true;
+    }
+    // покупка задаем индекс, отправляем денги , меняем статус продажи
+    function payHouse(uint _house)public payable{
+        if(appHouse[_house].sell == true){
+            payable(msg.sender).transfer(appHouse[_house].price);
+            appHouse[_house].owner = msg.sender;
+            appHouse[_house].sell = false;
+            appHouse[_house].price = 0;
+        }
+        else {
+            payable(msg.sender).transfer(msg.value);
+        }
+    }
+}
