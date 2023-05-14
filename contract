@@ -21,14 +21,12 @@ contract sale{
     }
     // покупка задаем индекс, отправляем денги , меняем статус продажи
     function payHouse(uint _house)public payable{
-        if(appHouse[_house].sell == true){
-            payable(msg.sender).transfer(appHouse[_house].price);
+        require(appHouse[_house].sell == true && msg.value == appHouse[_house].price,"house not sell /not sell");
+            payable(appHouse[_house].owner).transfer(appHouse[_house].price);
             appHouse[_house].owner = msg.sender;
             appHouse[_house].sell = false;
             appHouse[_house].price = 0;
-        }
-        else {
-            payable(msg.sender).transfer(msg.value);
-        }
+        
+  
     }
 }
