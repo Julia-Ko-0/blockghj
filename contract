@@ -30,3 +30,55 @@ contract sale{
   
     }
 }
+//////////////////////////////
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0;
+contract sale{
+    struct House{
+        address owner;
+        uint square;
+        uint year;
+       
+    }
+    struct SellHouse{
+        address owner;
+        bool sell;
+        uint price;
+        address buyer;
+    }
+
+    House[] public  appHouse;
+    SellHouse[] public putOnSellHouse;
+    address admin = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+    address buyer = address(0);
+    constructor(){
+        appHouse.push(House(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2,50,5));
+    }
+    function addHouse(address _owner,uint _square, string memory _info, uint _year) public {
+        require(msg.sender == admin);
+        appHouse.push(House(_owner,_square,_year,buyer));
+    }
+    // выставляем на продажу задаем индекс дома и цену
+    function putOnSele(uint _house,uint _price) public {
+        require(msg.sender == appHouse[_house].owner,"not owner");
+        putOnSellHouse.push(SellHouse(_house,true,_price));
+    }
+    //запрос на покупку
+    function payHouse(uint _house)public payable{
+        require(putOnSellHouse[_house].sell == true && msg.value == appHouse[_house].price,"house not sell /not sell");
+            buyer = msg.sender;
+            putOnSellHouse[_house].sell == false;
+           
+    }
+    // одобрание покупки
+    function approved(uint _house)public payable{
+        require(putOnSellHouse[_house].sell == true,"house not sell /not sell");
+        payable(appHouse[_house].owner).transfer(appHouse[_house].price);
+        appHouse[_house].owner = buyer;
+        
+    }
+    function rejected(uint _house){
+
+    }
+
+}
