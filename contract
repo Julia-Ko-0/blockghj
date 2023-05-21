@@ -7,28 +7,60 @@ contract sale{
         uint year;
         bool sell;
         uint price;
+        bool payment;
+       
     }
     House[] public  appHouse;
-    address admin ;
-    function addHouse(uint _square,uint _year) public {
-        appHouse.push(House(msg.sender,_square,_year,false,0));
+
+    address admin = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+    address buyer = address(0);
+    constructor(){
+        appHouse.push(House(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4,50,5,false,0,false));
+    }
+    function addHouse(address _owner,uint _square,uint _year) public {
+        require(msg.sender == admin);
+        appHouse.push(House(_owner,_square,_year,false,0,false));
     }
     // выставляем на продажу задаем индекс дома и цену
-    function canselSele(uint _house,uint _price) public {
+    function putOnSele(uint _house,uint _price)public {
         require(msg.sender == appHouse[_house].owner,"not owner");
-        appHouse[_house].price = _price;
-        appHouse[_house].sell = true;
+        appHouse[_house].sell == true;
+        appHouse[_house].price == _price;
+        buyer == msg.sender;
     }
-    // покупка задаем индекс, отправляем денги , меняем статус продажи
-    function payHouse(uint _house)public payable{
-        require(appHouse[_house].sell == true && msg.value == appHouse[_house].price,"house not sell /not sell");
-            payable(appHouse[_house].owner).transfer(appHouse[_house].price);
-            appHouse[_house].owner = msg.sender;
-            appHouse[_house].sell = false;
-            appHouse[_house].price = 0;
+    // отмена покупки
+       function cancelSale (uint _house) public {
+        require(msg.sender == appHouse[_house].owner,"You are not the owner");
+        appHouse[_house].sell == true;
+    }
+    // запрос на погкупку дома
+    function payHouse(uint _index)public payable{
+        if (appHouse[_index].sell == true){
+            require(msg.value == appHouse[_index].price);
+            buyer = msg.sender;
+            appHouse[_index].payment = true;
+        }
+         else {
+        payable(msg.sender).transfer(msg.value);
+        revert('');
+        }
+    
+    }
+    // одобрание покупки
+    function confirmation(uint _house)public payable{
+        require(msg.sender == appHouse[_house].owner,"not owner");
+        require(appHouse[_house].payment == true, "money not received");
+        payable(msg.sender).transfer(appHouse[_house].price);
+        appHouse[_house].owner = buyer;
+        appHouse[_house].payment == false;
+        appHouse[_house].sell == true;
+
+
         
-  
     }
+   
+   
+
 }
 //////////////////////////////
 // SPDX-License-Identifier: MIT
