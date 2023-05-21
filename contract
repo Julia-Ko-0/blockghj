@@ -110,11 +110,18 @@ contract sale{
         appHouse.push(House(_owner,_square,_year));
     }
     // выставляем на продажу задаем индекс дома и цену
-    function putOnSele(uint _house,uint _price) public {
+    function putOnSele(uint _house,uint _price)public {
         require(msg.sender == appHouse[_house].owner,"not owner");
-        putOnSellHouse.push(SellHouse(_house,true,_price,buyer));
+        putOnSellHouse.push(SellHouse(msg.sender,true,_price));
+        buyer == msg.sender;
     }
-    function payHouse(uint _index)public payable {
+    // отмена покупки
+       function cancelSale (uint _house) public {
+        require(msg.sender == appHouse[_house].owner,"You are not the owner");
+        putOnSellHouse[_house].sell = false;
+    }
+    // запрос на погкупку дома
+    function payHouse(uint _index)public payable{
         if (putOnSellHouse[_index].sell == true){
             require(msg.value == putOnSellHouse[_index].price);
             buyer = msg.sender;
@@ -124,16 +131,18 @@ contract sale{
         payable(msg.sender).transfer(msg.value);
         revert('');
         }
-    }
+    
     }
     // одобрание покупки
-    function approved(uint _house)public payable{
-        require(msg.sender == appHouse[_houseId].owner,"not owner");
-        require(statusOfPayed,"Money not received")
+    function confirmation(uint _house)public payable{
+        require(msg.sender == appHouse[_house].owner,"not owner");
+        require(statusOfPayed == false, "money not received");
         payable(msg.sender).transfer(putOnSellHouse[_house].price);
         appHouse[_house].owner = buyer;
+        putOnSellHouse[]
         
     }
+   
    
 
 }
