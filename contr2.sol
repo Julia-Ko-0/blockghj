@@ -1,4 +1,101 @@
-ИТОГ
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0;
+
+contract Seller{
+    // address master = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;//мастер не один//ДОБ структ мастера
+    struct Auto{
+        address owner;//добавить марку модель //маппинг добавить 
+        string color; 
+        string firm;
+    }
+    struct PaintAuto {
+        string numer;
+        string newColor;
+        uint price;//мастер цена
+        bool paint;//выст на покраску
+        bool approval;//щценина или нет
+        address master; 
+    }
+    struct Master{
+        address master;
+        string name;
+        string surnsme;
+    }
+    Master[] public masMaster;
+    // Auto[] public masAuto;
+    PaintAuto[] public masPaintAuto;
+    mapping (string => Auto) masAuto;
+     constructor(){
+        masMaster.push(Master(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4,"Anatolii","Fedorov"));
+        masMaster.push(Master(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2,"Genadii","Antoshin"));
+    }
+
+//  добавление машины
+    function addAuto(string memory _color,string memory _firm, string memory _num) public {
+        masAuto[_num] = (Auto(msg.sender, _color,_firm));
+    }
+// выставка на оценку покараски
+    function sendingforEvaluation(string memory _num,string memory _color) public {
+        require(msg.sender == masAuto[_num].owner,"You are not the owner");
+        for(uint i = 0; i< masPaintAuto.length;i++){
+            if (masPaintAuto[i].numer == _num && masPaintAuto[i].approval == true ){
+                masPaintAuto.push(PaintAuto(_num,_color,0,true,false,address(0)));
+            }
+            if(masPaintAuto[i].numer == _num && masPaintAuto[i].approval == false){
+                revert("the order is not completed");
+            }
+        
+        }
+        // require(masPaintAuto[i].paint == true,"not false"); 
+    }
+// оценка стоимости покраски
+    function estimation(uint _Auto,uint _price) public {
+        for (uint i = 0; i< masMaster.length;i++){
+            if (msg.sender == masMaster[i].master){
+                require(masPaintAuto[_Auto].paint == true);
+                require(masPaintAuto[_Auto].price == 0 );
+                masPaintAuto[_Auto].price = _price;
+                masPaintAuto[_Auto].master = msg.sender;
+                return ;
+            }
+        }
+        // require(msg.sender == master,"You are not the master");  
+    }
+    // соглание на покраску
+    function approval(uint _auto, bool otv) public payable{
+        require(msg.sender == masAuto[masPaintAuto[_auto].numer].owner,"You are not the owner");
+        if (otv){
+            require(masPaintAuto[_auto].price != 0,"not rated yet");
+            require(msg.value == masPaintAuto[_auto].price);
+            masPaintAuto[_auto].approval = true;
+        }
+        else{
+            masPaintAuto[_auto].approval = false;
+            masPaintAuto[_auto].paint == false; 
+        }
+    }
+    // // отмена покраски
+    // function cancellation(uint _auto) public {
+    //     require(msg.sender == masPaintAuto[_auto].adresAuto,"You are not the owner");
+    //     require(masPaintAuto[_auto].approval == true || masPaintAuto[_auto].paint == true );
+    //     masPaintAuto[_auto].approval = false;
+    //     masPaintAuto[_auto].paint == false; 
+    // }
+
+    // покраска
+    function painting(uint _auto)public {
+        require(masPaintAuto[_auto].approval == false,"ddd");
+        require(masPaintAuto[_auto].price !=0);
+        require(masPaintAuto[_auto].paint == true,"not price");
+        require(masPaintAuto[_auto].master == msg.sender,"not master");
+        masPaintAuto[_auto].paint == false;
+        masPaintAuto[_auto].approval = false;
+        masAuto[masPaintAuto[_auto].numer].color = masPaintAuto[_auto].newColor;
+        payable(msg.sender).transfer(masPaintAuto[_auto].price);
+        // require(msg.sender == master,"not master");
+    }
+}  
+////////////////////////////////////////////////////////////////////
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0;
 
