@@ -1,3 +1,86 @@
+///ITOG
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.7.0;
+contract sale{
+    struct House{
+        address owner;
+        uint square;
+        uint year;
+        bool sell;//выставлен на продажу или нет
+        uint price;
+        bool payment;//внесены деньги или нет
+        address buyer;
+       
+    }
+    House[] public appHouse;
+
+    address admin = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4;
+    // address buyer = address(0);
+    constructor(){
+        appHouse.push(House(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4,50,5,false,0,false,address(0)));
+    }
+    function addHouse(address _owner,uint _square,uint _year) public {
+        require(msg.sender == admin);
+        appHouse.push(House(_owner,_square,_year,false,0,false,address(0)));
+    }
+    // выставляем на продажу задаем индекс дома и цену
+    function putOnSele(uint _house,uint _price)public {
+        require(msg.sender == appHouse[_house].owner,"not owner");
+        require(appHouse[_house].sell == false,"already for sale");
+        appHouse[_house].sell = true;
+        appHouse[_house].price = _price;
+        
+    }
+    // отмена покупки
+       function cancelSale (uint _house) public {
+        require(msg.sender == appHouse[_house].owner,"You are not the owner");
+        appHouse[_house].sell = true;
+        // if(appHouse[_index].buyer != address(0)){
+        //     payable(appHouse[_index].buyer).transfer()
+        // }
+    }
+    // запрос на погкупку дома
+    function payHouse(uint _index)public payable{
+        if (appHouse[_index].sell == true && msg.value == appHouse[_index].price){
+            appHouse[_index].payment = true;
+            appHouse[_index].buyer = msg.sender;
+        }
+        else {
+        payable(msg.sender).transfer(msg.value);
+        // revert(""); 
+        }
+    
+    }
+    // одобрание покупки
+    function confirmation(uint _house)public payable{
+        require(msg.sender == appHouse[_house].owner,"not owner");
+        require(appHouse[_house].payment == true, "money not received");
+        payable(msg.sender).transfer(appHouse[_house].price);
+        appHouse[_house].owner = appHouse[_house].buyer;
+        appHouse[_house].buyer = address(0);
+        appHouse[_house].payment = false;
+        appHouse[_house].sell = true;
+        appHouse[_house].price = 0;
+
+
+        
+    }
+   
+   
+
+}
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0;
 contract sale{
